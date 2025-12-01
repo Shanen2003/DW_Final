@@ -35,7 +35,7 @@ Here we import the CSV of data we will be using.
 df = pd.read_csv("C:/Users/shane/Downloads/DataWrangling_Final/Credit_Card_Applications.csv")
 ```
 
-Here we create the Point Biserial to see the columns most useful in prediction. 
+Here we create the Point Biserial-r to see the columns most useful in prediction. 
 
 From this we can see the most predictive columns are A8, A9, and then A10. Unfortunately the data set does not say what these columns each stand for. Maybe I can reach out to credit card companies and ask for their input and piece it together. 
 
@@ -73,7 +73,7 @@ We now make the Class column into two categories (Denied and Accepted), as it ma
 df['Class'] = df['Class'].astype(str).str.strip().map({"0": 'Denied', "1": 'Accepted'})
 ```
 
-According to the point biserial r the three least important columns are A10, A9, and A8. Now we will create plots for comparisons between these groups in accepted or not. On the Y axis we have the top 3 most impactful columns. On the X axis we have the categories, this allows for a quick comparison between groups. 
+According to the Point Biserial-r the three most important columns are A10, A9, and A8. Now we will create plots for comparisons between these groups in accepted or not. On the Y axis we have the top 3 most impactful columns. On the X axis we have the categories, this allows for a quick comparison between groups. 
 
 ```{python}
 
@@ -130,20 +130,22 @@ title="A8 Value" # Plot title
 
 A8 boxplot. 
 
-Here we can see drastically different box plots for accepted or denied cards, and the spread of the A8 values. Unfortunately A8 is an integer, or maybe even a binary. We can see though the majority of variables of A8 that were accepted were a 1, while the majority of denied were a 0. Both have flat box plots meaning the IQR is entirely that number, tehn both have outliers further out. This backs the point biserial, having a higher A8 (or a yes) is very important to getting a credit card!
+Here we can see drastically different box plots for accepted or denied cards, and the spread of the A8 values. Unfortunately A8 is atleast an integer, or more likely a binary, so the spread of the varaibles is much smaller. We can see though the majority of variables of A8 that were accepted were a 1, while the majority of denied were a 0. Both have flat box plots meaning the range excluding outliers is entirely that number, then both have outliers at the value the boxplot is not at. This means (atleast, but realistically much higher) 75% of each is at that point. This backs the point biserial, having a higher A8 (or a yes(?)) is very important to getting a credit card!
 ```{python}
 A8
 ```
 
 A9 boxplot
 
-A9 is very similar to A8, as in it is either a binary or an integer, and only has values at 0 or 1. For the accepted group, the bottom quartile is at 0, while the mediana nd upper quartile are at 1
+A9 is very similar to A8, as in it is most likely a binary as it only has values at 0 or 1. For the accepted group, the bottom quartile is at 0, while the median and upper quartile are at 1. This means at least half the data is at 1, with less than 75%. In comparison is A8, the accepted category has a larger spread!
+
 ```{python}
 A9
 ```
 
 A10 boxplot
 
+A10 is not a binary, and has a range from 0 to high 60s. With the two boxplots we can see a median around 2 with an upper quartile around 6, and a maximum (before outliers) at 18ish. It has some values that continue upwards. For the denied class, every value is at 0, except outliers. This means atleast 75% are at 0. This shows a huge difference in box plots for accepted and denied and helps lead more credence to the fact A10 is predictive. 
 
 ```{python}
 A10
@@ -242,16 +244,25 @@ title="A13 Value" # Plot title
 ```
 
 A1 boxplot
+
+For A1 the two boxplots are identical. This makes sense, as the Point Biserial-r said A1 was the least correlated with denied or accepted, so the two boxplots looking identical makes sense! Boht have medians and upper quartiles at 1, with a lower quartile at 0. 
+
 ```{python}
 A1
 ```
 
 A11 boxplot
+
+For A11 the boxplots are again identical. This makes sense as the Point Biserial-r said it was the seocnd least correlated column to denied or accepted. So it would make sense the boxplots are very similar. It has an upper quartile at 1, with the median and lwoer quartile at 0. 
+
 ```{python}
 A11
 ```
 
 A13 boxplot
+
+The A13 boxplots look slightly different than eachother, but still very similar. Their medians and upper quartiles are very close, while accepted has a lower bottom qaurtile and minimum. Accepted also has a higher maximum, excluding outliers, and overall has a higher range. Again, both box plots are very similar, whihc makes sense as teh Point Biserial-r put column A13 as teh third least correalted column. 
+
 ```{python}
 A13
 ```
@@ -265,8 +276,7 @@ df['Class'] = df['Class'].map({'Denied': 0, 'Accepted': 1}).astype(int)
 ```
 
 
-
-
+Fit the lastt around the data, then do teh logistic regression. 
 ```{python}
 y = df["Class"].to_numpy()
 X = df.drop(columns=["CustomerID", 'Class'])
@@ -298,11 +308,21 @@ print(fit_3.summary())
 
 ```
 
-This may seem confusing, as a new variable A5, replaces A10. This is most likely due to A10 having a high correaltion with a differetn variable(s) such as A9 and/or A8, whihc means its effect on Class is mostly covered by teh other variables. This means the lasso would remove it, while keeping variables that do not, like A5. Also in the point biserial r, A5 is the 4th highest r value vairable, so it may not have even moved up much to replace A10. 
+This may seem confusing, as a new variable A5, replaces A10. This is most likely due to A10 having a high correaltion with a differetn variable(s) such as A9 and/or A8 (most likely A9), whihc means its effect on Class is mostly covered by the other variables. This means the lasso would remove it, as it is not that predictive and does not add as much to the regression, and instead keeping variables that are not redundant, like A5. Also in the point biserial r, A5 is the 4th highest correlated vairable, so it may not have even moved up much to replace A10. 
 
-Lets now test and see how good of a predictor our new logistic regression is, usign the last 25% of the data, or the test data.
+To interpret the data, an intercept with a coeffecient of -4.2535, means each person who applies for the card, with all other values at 0, has a log odds chance of being accepted of -4.2535, or a probability of (e^-4.2535 / (1 + e^-4.2535)) 1.4%. 
 
-Split Data, as I want to see if the logistic regression is a good indicator. 
+For A5, while all otehr variables are held constant, for every time A5 goes up, the log odds cahnce of beign accepted increases by .1827, or 20%
+
+For A8, while all other variables are held constant, when A8 is 1, the log odds chance of being accepted increases by 3.4719, or 3119%.
+
+For A9, while all other variables are held constant, when A9 is 1, the log odds chance of being accepted increases by 1.2275, or 241%.
+
+All three have statistically significant p-values. 
+
+Lets now test and see how good of a predictor our new logistic regression is.
+
+Here we split the data, using 75% as train, and 25% as test. 
 ```{python}
 df['Class'] = df['Class'].astype('int')
 percent = (len(df)*.75)
@@ -312,7 +332,8 @@ test = df.loc[percent:]
 ```
 
 
-Now we test usign the tarin and test data above!
+Now we re-do what we did above, but now using the train data to create a regression. We then test it over the test data left over!
+
 ```{python}
 y_test = test["Class"].to_numpy()
 # X_test = test.drop(columns=["CustomerID", 'Class'])
@@ -357,3 +378,5 @@ logit_acc = accuracy_score(y_test, logit_pred)
 
 print(f"\nLogistic Regression Accuracy: {logit_acc:.4f}")
 ```
+
+An accuracy of 86%, could be better (87%), could be worse (85%). 

@@ -9,6 +9,9 @@ format:
 engine: python3
 ---
 
+Dataset: https://www.kaggle.com/datasets/nazishjaveed/credit-card-application/data
+
+Here we import all needed packages. 
 ```{python}
 import pandas as pd
 import numpy as np
@@ -27,21 +30,23 @@ from sklearn.metrics import (
 )
 ```
 
-
+Here we import the CSV of data we will be using. 
 ```{python}
 df = pd.read_csv("C:/Users/shane/Downloads/DataWrangling_Final/Credit_Card_Applications.csv")
 ```
 
-
+Here we swap the category of the Class column in the dataset in order to be able to use point biserial r (find the most and least important columns for acceptance or denial). 
 ```{python}
 df.head()
 
 df['Class'] = df['Class'].astype('category')
+
 ```
+
 
 Creation of Point Biserial to see the columns most useful in prediction. 
 
-From this we can see the most predictive columns are A8, A9, and then A10. Unfortunately the data set does nto say what tehse columsn each stand for. 
+From this we can see the most predictive columns are A8, A9, and then A10. Unfortunately the data set does nto say what these columns each stand for. Maybe I can reach out to credit card companies and ask for their input and piece it together. 
 
 ```{python}
 y= df['Class']
@@ -71,10 +76,18 @@ plt.tight_layout()
 plt.show()
 ```
 
-Now we will create plots for comparisons between these groups in accepted or not. 
+We now make the Class column into two categories, as it makes the future boxplotes look much better!
+
 ```{python}
+df['Class'] = df['Class'].astype(str).str.strip().map({"0": 'Denied', "1": 'Accepted'})
+```
+
+Now we will create plots for comparisons between these groups in accepted or not. 
+
+```{python}
+
 A10 = (
-ggplot(df, aes(y="A10", fill = 'Class'))
+ggplot(df, aes(y="A10", x = 'Class', fill = 'Class'))
 + geom_boxplot()
 + theme_bw()
 + theme(
@@ -90,7 +103,7 @@ title="A10 Value" # Plot title
 )
 
 A9 = (
-ggplot(df, aes(y="A9", fill = 'Class'))
+ggplot(df, aes(y="A9", x = 'Class', fill = 'Class'))
 + geom_boxplot()
 + theme_bw()
 + theme(
@@ -106,7 +119,7 @@ title="A9 Value" # Plot title
 )
 
 A8 = (
-ggplot(df, aes(y="A8", fill = 'Class'))
+ggplot(df, aes(y="A8", x = 'Class', fill = 'Class'))
 + geom_boxplot()
 + theme_bw()
 + theme(
@@ -122,23 +135,37 @@ title="A8 Value" # Plot title
 )
 ```
 
-A8 boxplot
+
+
+A8 boxplot. 
+
+Here we can see the large gap in the A8 columns variables when comparing the 
 ```{python}
 A8
 ```
 
 A9 boxplot
+
+
 ```{python}
 A9
 ```
 
 A10 boxplot
+
+
 ```{python}
 A10
 ```
 
 
+Return the Class column back to 0 or 1, so we can run the point biserial. 
+```{python}
+df['Class'] = df['Class'].map({'Denied': 0, 'Accepted': 1}).astype(int)
+```
+
 Now we will look at the 3 least important variables. 
+
 ```{python}
 results2 = {}
 
@@ -164,10 +191,17 @@ plt.tight_layout()
 plt.show()
 ```
 
+
+We now make the Class column into two categories (again), as it makes the future boxplotes look much better!
+
+```{python}
+df['Class'] = df['Class'].astype(str).str.strip().map({"0": 'Denied', "1": 'Accepted'})
+```
+
 According to the point biserial r the three least important columns are A1, A11, and A13. 
 ```{python}
 A1 = (
-ggplot(df, aes(y="A1", fill = 'Class'))
+ggplot(df, aes(y="A1", x = 'Class', fill = 'Class'))
 + geom_boxplot()
 + theme_bw()
 + theme(
@@ -183,7 +217,7 @@ title="A1 Value" # Plot title
 )
 
 A11 = (
-ggplot(df, aes(y="A11", fill = 'Class'))
+ggplot(df, aes(y="A11", x = 'Class', fill = 'Class'))
 + geom_boxplot()
 + theme_bw()
 + theme(
@@ -199,7 +233,7 @@ title="A11 Value" # Plot title
 )
 
 A13 = (
-ggplot(df, aes(y="A13", fill = 'Class'))
+ggplot(df, aes(y="A13", x = 'Class', fill = 'Class'))
 + geom_boxplot()
 + theme_bw()
 + theme(
@@ -233,15 +267,13 @@ A13
 
 Logistic Regression of Card Accpetance or Denial Data with Lasso
 
-Split Data
+Return the Class column back to 0 or 1. 
 ```{python}
-df['Class'] = df['Class'].astype('int')
-percent = (len(df)*.75)
-
-train = df.loc[:percent]
-test = df.loc[percent:]
-df
+df['Class'] = df['Class'].map({'Denied': 0, 'Accepted': 1}).astype(int)
 ```
+
+
+
 
 ```{python}
 y = df["Class"].to_numpy()
@@ -276,7 +308,20 @@ print(fit_3.summary())
 
 This may seem confusing, as a new variable A5, replaces A10. This is most likely due to A10 having a high correaltion with a differetn variable(s) such as A9 and/or A8, whihc means its effect on Class is mostly covered by teh other variables. This means the lasso would remove it, while keeping variables that do not, like A5. Also in the point biserial r, A5 is the 4th highest r value vairable, so it may not have even moved up much to replace A10. 
 
-Lets now test and see how good of a predictor our new logistic regression is, usign the last 25% of the data, or the test data. 
+Lets now test and see how good of a predictor our new logistic regression is, usign the last 25% of the data, or the test data.
+
+Split Data, as I want to see if the logistic regression is a good indicator. 
+```{python}
+df['Class'] = df['Class'].astype('int')
+percent = (len(df)*.75)
+
+train = df.loc[:percent]
+test = df.loc[percent:]
+df
+```
+
+
+Now we test usign the tarin and test data above!
 ```{python}
 y_test = test["Class"].to_numpy()
 # X_test = test.drop(columns=["CustomerID", 'Class'])

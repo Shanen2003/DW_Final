@@ -1,0 +1,324 @@
+---
+title: "Data_Wrangling_Final.qmd"
+author: "Shane Bateman"
+format:
+  html:
+    toc: true
+    toc-location: left
+    self-contained: true
+engine: python3
+---
+
+```{python}
+import pandas as pd
+import numpy as np
+from scipy.stats import pointbiserialr
+from plotnine import *
+import matplotlib.pyplot as plt
+import statsmodels.formula.api as smf
+import statsmodels.api as sm
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.linear_model import Lasso, LassoCV
+import statsmodels.formula.api as smf
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import preprocessing
+from sklearn.metrics import (
+    accuracy_score, log_loss, roc_auc_score, confusion_matrix, classification_report, ConfusionMatrixDisplay, f1_score
+)
+```
+
+
+```{python}
+df = pd.read_csv("C:/Users/shane/Downloads/DataWrangling_Final/Credit_Card_Applications.csv")
+```
+
+
+```{python}
+df.head()
+
+df['Class'] = df['Class'].astype('category')
+```
+
+Creation of Point Biserial to see the columns most useful in prediction. 
+
+From this we can see the most predictive columns are A8, A9, and then A10. Unfortunately the data set does nto say what tehse columsn each stand for. 
+
+```{python}
+y= df['Class']
+x = df.drop(columns = ['Class', 'CustomerID'])
+
+results = {}
+
+for col in x.columns:
+    results['correlation_' + str(col)] = pointbiserialr(y, x[col])
+
+pb = pd.DataFrame.from_dict(results, orient='index')
+pb = pb.rename(columns = {'statistic': 'r', 'pvalue': 'p'})
+
+pb.index = pb.index.str.replace('correlation_', '', regex = False).str.strip()
+
+pb = pb.dropna(subset = ['r'])
+
+topN = 3
+
+pb_sorted = pb.reindex(pb['r'].abs().sort_values(ascending = False).index)
+
+plt.figure(figsize=(8, 10))
+pb_sorted['r'].head(topN).iloc[::-1].plot(kind='barh')
+plt.xlabel('Point-biserial r (Accept = 1)')
+plt.title(f'Top {topN} Features by |r|')
+plt.tight_layout()
+plt.show()
+```
+
+Now we will create plots for comparisons between these groups in accepted or not. 
+```{python}
+A10 = (
+ggplot(df, aes(y="A10", fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A10 Value" # Plot title
+)
+)
+
+A9 = (
+ggplot(df, aes(y="A9", fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A9 Value" # Plot title
+)
+)
+
+A8 = (
+ggplot(df, aes(y="A8", fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A8 Value" # Plot title
+)
+)
+```
+
+A8 boxplot
+```{python}
+A8
+```
+
+A9 boxplot
+```{python}
+A9
+```
+
+A10 boxplot
+```{python}
+A10
+```
+
+
+Now we will look at the 3 least important variables. 
+```{python}
+results2 = {}
+
+for col in x.columns:
+    results2['correlation_' + str(col)] = pointbiserialr(y, x[col])
+
+pb2 = pd.DataFrame.from_dict(results, orient='index')
+pb2 = pb2.rename(columns = {'statistic': 'r', 'pvalue': 'p'})
+
+pb2.index = pb2.index.str.replace('correlation_', '', regex = False).str.strip()
+
+pb2 = pb2.dropna(subset = ['r'])
+
+bottomN = 3
+
+pb2_sorted = pb2.reindex(pb['r'].abs().sort_values(ascending = True).index)
+
+plt.figure(figsize=(8, 10))
+pb2_sorted['r'].head(bottomN).iloc[::-1].plot(kind='barh')
+plt.xlabel('Point-biserial r (Accept = 1)')
+plt.title(f'Bottom {bottomN} Features by |r|')
+plt.tight_layout()
+plt.show()
+```
+
+According to the point biserial r the three least important columns are A1, A11, and A13. 
+```{python}
+A1 = (
+ggplot(df, aes(y="A1", fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A1 Value" # Plot title
+)
+)
+
+A11 = (
+ggplot(df, aes(y="A11", fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A11 Value" # Plot title
+)
+)
+
+A13 = (
+ggplot(df, aes(y="A13", fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A13 Value" # Plot title
+)
+)
+```
+
+A1 boxplot
+```{python}
+A1
+```
+
+A11 boxplot
+```{python}
+A11
+```
+
+A13 boxplot
+```{python}
+A13
+```
+
+
+Logistic Regression of Card Accpetance or Denial Data with Lasso
+
+Split Data
+```{python}
+df['Class'] = df['Class'].astype('int')
+percent = (len(df)*.75)
+
+train = df.loc[:percent]
+test = df.loc[percent:]
+df
+```
+
+```{python}
+y = df["Class"].to_numpy()
+X = df.drop(columns=["CustomerID", 'Class'])
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+features = X.columns
+
+x_data = pd.DataFrame(X_scaled, columns=features)
+
+lambda_seq = np.arange(0.1, 10.0 + 1e-12, 0.1)
+cv_model = LassoCV(alphas=lambda_seq, cv=10, fit_intercept=True, max_iter=10000)
+cv_model.fit(X_scaled, y)
+alpha_min = cv_model.alpha_
+lasso = Lasso(alpha=alpha_min, fit_intercept=True, max_iter=10000)
+lasso.fit(X_scaled, y)
+
+coef_series = pd.Series(lasso.coef_, index=features, name="coef")
+coef_df = coef_series.reset_index()
+
+selected_features = coef_series[coef_series != 0].index.tolist()
+
+predictors = [f'Q("{c}")' for c in selected_features]
+formula = 'Q("Class") ~ ' + " + ".join(predictors)
+
+fit_3 = smf.logit(formula = formula, data = df).fit()
+
+print(fit_3.summary())
+
+```
+
+This may seem confusing, as a new variable A5, replaces A10. This is most likely due to A10 having a high correaltion with a differetn variable(s) such as A9 and/or A8, whihc means its effect on Class is mostly covered by teh other variables. This means the lasso would remove it, while keeping variables that do not, like A5. Also in the point biserial r, A5 is the 4th highest r value vairable, so it may not have even moved up much to replace A10. 
+
+Lets now test and see how good of a predictor our new logistic regression is, usign the last 25% of the data, or the test data. 
+```{python}
+y_test = test["Class"].to_numpy()
+# X_test = test.drop(columns=["CustomerID", 'Class'])
+
+y = train["Class"].to_numpy()
+X = train.drop(columns=["CustomerID", 'Class'])
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+features = X.columns
+
+x_data = pd.DataFrame(X_scaled, columns=features)
+
+lambda_seq = np.arange(0.1, 10.0 + 1e-12, 0.1)
+cv_model = LassoCV(alphas=lambda_seq, cv=10, fit_intercept=True, max_iter=10000)
+cv_model.fit(X_scaled, y)
+alpha_min = cv_model.alpha_
+lasso = Lasso(alpha=alpha_min, fit_intercept=True, max_iter=10000)
+lasso.fit(X_scaled, y)
+
+coef_series = pd.Series(lasso.coef_, index=features, name="coef")
+coef_df = coef_series.reset_index()
+
+selected_features = coef_series[coef_series != 0].index.tolist()
+
+predictors = [f'Q("{c}")' for c in selected_features]
+formula = 'Q("Class") ~ ' + " + ".join(predictors)
+
+fit_3 = smf.logit(formula = formula, data = train).fit()
+
+print(fit_3.summary())
+
+
+```
+
+```{python}
+logit_pred_prob = fit_3.predict(test[selected_features])
+logit_pred = (logit_pred_prob >= 0.5).astype(int)
+logit_acc = accuracy_score(y_test, logit_pred)
+
+print(f"\nLogistic Regression Accuracy: {logit_acc:.4f}")
+```
+
+
+

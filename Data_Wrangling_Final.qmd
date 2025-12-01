@@ -35,18 +35,9 @@ Here we import the CSV of data we will be using.
 df = pd.read_csv("C:/Users/shane/Downloads/DataWrangling_Final/Credit_Card_Applications.csv")
 ```
 
-Here we swap the category of the Class column in the dataset in order to be able to use point biserial r (find the most and least important columns for acceptance or denial). 
-```{python}
-df.head()
+Here we create the Point Biserial to see the columns most useful in prediction. 
 
-df['Class'] = df['Class'].astype('category')
-
-```
-
-
-Creation of Point Biserial to see the columns most useful in prediction. 
-
-From this we can see the most predictive columns are A8, A9, and then A10. Unfortunately the data set does nto say what these columns each stand for. Maybe I can reach out to credit card companies and ask for their input and piece it together. 
+From this we can see the most predictive columns are A8, A9, and then A10. Unfortunately the data set does not say what these columns each stand for. Maybe I can reach out to credit card companies and ask for their input and piece it together. 
 
 ```{python}
 y= df['Class']
@@ -76,13 +67,13 @@ plt.tight_layout()
 plt.show()
 ```
 
-We now make the Class column into two categories, as it makes the future boxplotes look much better!
+We now make the Class column into two categories (Denied and Accepted), as it makes the future boxplots look much better!
 
 ```{python}
 df['Class'] = df['Class'].astype(str).str.strip().map({"0": 'Denied', "1": 'Accepted'})
 ```
 
-Now we will create plots for comparisons between these groups in accepted or not. 
+According to the point biserial r the three least important columns are A10, A9, and A8. Now we will create plots for comparisons between these groups in accepted or not. On the Y axis we have the top 3 most impactful columns. On the X axis we have the categories, this allows for a quick comparison between groups. 
 
 ```{python}
 
@@ -139,14 +130,14 @@ title="A8 Value" # Plot title
 
 A8 boxplot. 
 
-Here we can see the large gap in the A8 columns variables when comparing the 
+Here we can see drastically different box plots for accepted or denied cards, and the spread of the A8 values. Unfortunately A8 is an integer, or maybe even a binary. We can see though the majority of variables of A8 that were accepted were a 1, while the majority of denied were a 0. Both have flat box plots meaning the IQR is entirely that number, tehn both have outliers further out. This backs the point biserial, having a higher A8 (or a yes) is very important to getting a credit card!
 ```{python}
 A8
 ```
 
 A9 boxplot
 
-
+A9 is very similar to A8, as in it is either a binary or an integer, and only has values at 0 or 1. For the accepted group, the bottom quartile is at 0, while the mediana nd upper quartile are at 1
 ```{python}
 A9
 ```
@@ -192,13 +183,14 @@ plt.show()
 ```
 
 
-We now make the Class column into two categories (again), as it makes the future boxplotes look much better!
+We now make the Class column into two categories (again), as it makes the boxplots look much better!
 
 ```{python}
 df['Class'] = df['Class'].astype(str).str.strip().map({"0": 'Denied', "1": 'Accepted'})
 ```
 
-According to the point biserial r the three least important columns are A1, A11, and A13. 
+According to the point biserial r the three least important columns are A1, A11, and A13. Now we will create plots for comparisons between these groups in accepted or not. On the Y axis we have the top 3 least impactful columns. On the X axis we have the categories, this allows for a quick comparison between groups. 
+
 ```{python}
 A1 = (
 ggplot(df, aes(y="A1", x = 'Class', fill = 'Class'))
@@ -317,7 +309,6 @@ percent = (len(df)*.75)
 
 train = df.loc[:percent]
 test = df.loc[percent:]
-df
 ```
 
 
@@ -357,6 +348,8 @@ print(fit_3.summary())
 
 ```
 
+Now we can get the accuracy from the above regression. 
+
 ```{python}
 logit_pred_prob = fit_3.predict(test[selected_features])
 logit_pred = (logit_pred_prob >= 0.5).astype(int)
@@ -364,6 +357,3 @@ logit_acc = accuracy_score(y_test, logit_pred)
 
 print(f"\nLogistic Regression Accuracy: {logit_acc:.4f}")
 ```
-
-
-

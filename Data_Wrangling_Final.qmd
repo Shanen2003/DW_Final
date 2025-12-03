@@ -301,17 +301,29 @@ fit_3 = smf.logit(formula = formula, data = df).fit()
 
 print(fit_3.summary())
 
+
+summary_str = fit_3.summary().as_text()
+
+fig = plt.figure(figsize=(9, 7))
+fig.patch.set_alpha(0)     
+plt.axis('off')
+
+plt.text(0, 1, summary_str, fontsize=10, family="monospace", va="top")
+
+plt.savefig("C:/Users/shane/Downloads/fit_3_summary.png", dpi=300, bbox_inches='tight', transparent=True)
+plt.close()
+
 ```
 
-The logistic regression may seem confusing, as a new variable A5, replaces A10. This is most likely due to A10 having a high correaltion with already included variable(s), A9 and/or A8. This means the effect of A10 on Class is mostly covered by the other variables. Due to this the lasso would remove it, as it is not predictive and does not add as much to the regression. Instead the lasso keeps variable that are not redundant, like A5. Also in the Point Biserial-r, A5 is the 4th highest correlated vairable, so it may not have even moved up much to replace A10. 
+The logistic regression may seem confusing, as a new variable A5, replaces A10. This is most likely due to A10 having a high correaltion with already included variable(s), A9 and/or A8. This means the effect of A10 on Class is mostly covered by the other variables. Due to this the lasso would remove it, as it is not predictive and does not add as much to the regression. Instead the lasso keeps variable that are not redundant, like A5. Also in the Point Biserial-r, A5 is the 4th highest correlated vairable, so it may not have even "moved up" much to replace A10. 
 
-To interpret the data, an intercept with a coeffecient of -4.2535, means each person who applies for the card, with all other values at 0, has a log odds chance of being accepted of -4.2535, or a probability of (e^-4.2535 / (1 + e^-4.2535)) 1.4%. 
+To interpret the data, an intercept with a coeffecient of -4.2535, means each person who applies for the card, with all other predictor values at 0, has a log odds chance of being accepted of -4.2535, or a probability of (e^-4.2535 / (1 + e^-4.2535)) 1.4%. 
 
-For A5, while all other variables are held constant, for every time A5 goes up, the log odds chance of being accepted also increases by .1827, or 20%
+For A5, while all other variables are held constant, for every unit increase of A5, the chance of being accepted increases 20%.
 
-For A8, while all other variables are held constant, when A8 is 1, the log odds chance of being accepted also increases by 3.4719, or 3119%.
+For A8, while all other variables are held constant, when A8 is 1, the odds of being accepted increase by around 3119%, or a factor of 32ish, compared to an A8 of 0.
 
-For A9, while all other variables are held constant, when A9 is 1, the log odds chance of being accepted also increases by 1.2275, or 241%.
+For A9, while all other variables are held constant, when A9 is 1, the odds of being accepted increase by around 241%, or a factor of 3.4ish, compared to an A9 of 0.
 
 All have statistically significant p-values, so it is safe to say these correlations are not random chance!
 
@@ -361,6 +373,16 @@ fit_3 = smf.logit(formula = formula, data = train).fit()
 
 print(fit_3.summary())
 
+summary_str = fit_3.summary().as_text()
+
+fig = plt.figure(figsize=(9, 7))
+fig.patch.set_alpha(0)     
+plt.axis('off')
+
+plt.text(0, 1, summary_str, fontsize=10, family="monospace", va="top")
+
+plt.savefig("C:/Users/shane/Downloads/fit_3_summary_test.png", dpi=300, bbox_inches='tight', transparent=True)
+plt.close()
 
 ```
 

@@ -1,18 +1,12 @@
----
-title: "Data_Wrangling_Final"
-author: "Shane Bateman"
-format: gfm
-jupyter: python3
-execute:
-  warning: false
-  message: false
-  error: false
----
+# Data_Wrangling_Final
+Shane Bateman
 
-Dataset: https://www.kaggle.com/datasets/nazishjaveed/credit-card-application/data
+Dataset:
+https://www.kaggle.com/datasets/nazishjaveed/credit-card-application/data
 
-Here we import all needed packages and the CSV. 
-```{python}
+Here we import all needed packages and the CSV.
+
+``` python
 import pandas as pd
 import numpy as np
 from scipy.stats import pointbiserialr
@@ -32,10 +26,15 @@ from sklearn.metrics import (
 df = pd.read_csv("C:/Users/shane/Downloads/DataWrangling_Final/Credit_Card_Applications.csv")
 ```
 
-Here we create the Point Biserial-r to see the columns most useful in prediction. 
+Here we create the Point Biserial-r to see the columns most useful in
+prediction.
 
-From this we can see the (3) most correlated columns are (in order) A8, A9, and then A10. Unfortunately the data set does not say what each column stands for. Maybe I can reach out to credit card companies and ask for their input and piece it together. 
-```{python}
+From this we can see the (3) most correlated columns are (in order) A8,
+A9, and then A10. Unfortunately the data set does not say what each
+column stands for. Maybe I can reach out to credit card companies and
+ask for their input and piece it together.
+
+``` python
 y= df['Class']
 x = df.drop(columns = ['Class', 'CustomerID'])
 
@@ -63,16 +62,22 @@ plt.tight_layout()
 plt.show()
 ```
 
-We now make the Class column into two categories (Denied and Accepted), as it makes the future boxplots look much better!
+![](Data_Wrangling_Final_files/figure-commonmark/cell-3-output-1.png)
 
-```{python}
+We now make the Class column into two categories (Denied and Accepted),
+as it makes the future boxplots look much better!
+
+``` python
 df['Class'] = df['Class'].astype(str).str.strip().map({"0": 'Denied', "1": 'Accepted'})
 ```
 
-According to the Point Biserial-r the three most important columns are A10, A9, and A8. Now we will create boxplots for comparisons between these groups in accepted or denied. On the Y axis we have the the column data. On the X axis we have accepted or denied, this allows for a quick comparison between groups. 
+According to the Point Biserial-r the three most important columns are
+A10, A9, and A8. Now we will create boxplots for comparisons between
+these groups in accepted or denied. On the Y axis we have the the column
+data. On the X axis we have accepted or denied, this allows for a quick
+comparison between groups.
 
-```{python}
-
+``` python
 A10 = (
 ggplot(df, aes(y="A10", x = 'Class', fill = 'Class'))
 + geom_boxplot()
@@ -122,37 +127,67 @@ title="A8 Value" # Plot title
 )
 ```
 
-A8 boxplot. 
+A8 boxplot.
 
-Here we can see drastically different box plots for accepted or denied cards, along with the spread (or lack of) with the A8 values. Unfortunately A8 is atleast an integer, or more likely a binary, so the variables are only 1 or 0. Despite this, we can see the majority of variables of A8 that were accepted were a 1, while the majority of denied were a 0. Both have flat box plots meaning the range excluding outliers is entirely that number, then both have outliers at the value the boxplot is not at. This means (atleast, but realistically much higher) 75% of each is at that point. This backs the point biserial, having a higher A8 (1) is very important to getting accepted!
-```{python}
-A8
+Here we can see drastically different box plots for accepted or denied
+cards, along with the spread (or lack of) with the A8 values.
+Unfortunately A8 is atleast an integer, or more likely a binary, so the
+variables are only 1 or 0. Despite this, we can see the majority of
+variables of A8 that were accepted were a 1, while the majority of
+denied were a 0. Both have flat box plots meaning the range excluding
+outliers is entirely that number, then both have outliers at the value
+the boxplot is not at. This means (atleast, but realistically much
+higher) 75% of each is at that point. This backs the point biserial,
+having a higher A8 (1) is very important to getting accepted!
+
+``` python
+A8.draw()
 ```
+
+![](Data_Wrangling_Final_files/figure-commonmark/cell-6-output-1.png)
 
 A9 boxplot
 
-A9 is very similar to A8, as in it is most likely a binary. For the accepted group, the bottom quartile is at 0, while the median and upper quartile are at 1. This means at least half, and less than 75%, of the data is at 1 in the accepted group. In comparison to A8, the accepted category has a larger spread. The denied category is still all 0s, excluding outliers, so it makes sense A9 has a high correlation, the boxplot is drastically different between accepted and denied. 
+A9 is very similar to A8, as in it is most likely a binary. For the
+accepted group, the bottom quartile is at 0, while the median and upper
+quartile are at 1. This means at least half, and less than 75%, of the
+data is at 1 in the accepted group. In comparison to A8, the accepted
+category has a larger spread. The denied category is still all 0s,
+excluding outliers, so it makes sense A9 has a high correlation, the
+boxplot is drastically different between accepted and denied.
 
-```{python}
-A9
+``` python
+A9.draw()
 ```
+
+![](Data_Wrangling_Final_files/figure-commonmark/cell-7-output-1.png)
 
 A10 boxplot
 
-A10 is not a binary, and has a values from 0 to high 60s. With the accepted boxplot we can see a median around 2 with an upper quartile around 6, and a maximum (before outliers) around 18. For the denied class, every value is at 0, except outliers. This means atleast 75% are at 0. This shows a huge difference in box plots for accepted and denied which makes sense, as the column A10 and accepted vs denied are moderately correlated. 
+A10 is not a binary, and has a values from 0 to high 60s. With the
+accepted boxplot we can see a median around 2 with an upper quartile
+around 6, and a maximum (before outliers) around 18. For the denied
+class, every value is at 0, except outliers. This means atleast 75% are
+at 0. This shows a huge difference in box plots for accepted and denied
+which makes sense, as the column A10 and accepted vs denied are
+moderately correlated.
 
-```{python}
-A10
+``` python
+A10.draw()
 ```
 
-Return the Class column back to 0 or 1, so we can run the point biserial, for the least correlated (closest to 0). 
-```{python}
+![](Data_Wrangling_Final_files/figure-commonmark/cell-8-output-1.png)
+
+Return the Class column back to 0 or 1, so we can run the point
+biserial, for the least correlated (closest to 0).
+
+``` python
 df['Class'] = df['Class'].map({'Denied': 0, 'Accepted': 1}).astype(int)
 ```
 
-Now we will look at the 3 least correlated variables. 
+Now we will look at the 3 least correlated variables.
 
-```{python}
+``` python
 results2 = {}
 
 for col in x.columns:
@@ -177,15 +212,22 @@ plt.tight_layout()
 plt.show()
 ```
 
-We now make the class column into two categories (again), as it makes the boxplots look much better!
+![](Data_Wrangling_Final_files/figure-commonmark/cell-10-output-1.png)
 
-```{python}
+We now make the class column into two categories (again), as it makes
+the boxplots look much better!
+
+``` python
 df['Class'] = df['Class'].astype(str).str.strip().map({"0": 'Denied', "1": 'Accepted'})
 ```
 
-According to the point biserial r the three least important columns (in order) are A1, A11, and A13. Now we will create boxplots for comparisons between these groups in accepted or not. On the Y axis we have the column values. On the X axis we have the category, this allows for a quick comparison between groups. 
+According to the point biserial r the three least important columns (in
+order) are A1, A11, and A13. Now we will create boxplots for comparisons
+between these groups in accepted or not. On the Y axis we have the
+column values. On the X axis we have the category, this allows for a
+quick comparison between groups.
 
-```{python}
+``` python
 A1 = (
 ggplot(df, aes(y="A1", x = 'Class', fill = 'Class'))
 + geom_boxplot()
@@ -237,42 +279,66 @@ title="A13 Value" # Plot title
 
 A1 boxplot
 
-For A1 the two boxplots are identical. This makes sense, as the Point Biserial-r said A1 was the least correlated with denied or accepted, so the two boxplots looking identical makes sense! Both have medians and upper quartiles at 1, with a lower quartile at 0. 
+For A1 the two boxplots are identical. This makes sense, as the Point
+Biserial-r said A1 was the least correlated with denied or accepted, so
+the two boxplots looking identical makes sense! Both have medians and
+upper quartiles at 1, with a lower quartile at 0.
 
-```{python}
-A1
+``` python
+A1.draw()
 ```
+
+![](Data_Wrangling_Final_files/figure-commonmark/cell-13-output-1.png)
 
 A11 boxplot
 
-For A11 the boxplots are again identical. This makes sense as the Point Biserial-r said it was the second least correlated column to denied or accepted. So it would make sense the boxplots are very similar. Both have an upper quartile at 1, with their median and lower quartile at 0. 
+For A11 the boxplots are again identical. This makes sense as the Point
+Biserial-r said it was the second least correlated column to denied or
+accepted. So it would make sense the boxplots are very similar. Both
+have an upper quartile at 1, with their median and lower quartile at 0.
 
-```{python}
-A11
+``` python
+A11.draw()
 ```
+
+![](Data_Wrangling_Final_files/figure-commonmark/cell-14-output-1.png)
 
 A13 boxplot
 
-The A13 boxplots look slightly different than eachother, but still very similar. Their medians and upper quartiles are very close, while accepted has a lower bottom quartile and minimum. Accepted also has a higher maximum, excluding outliers. Again, both box plots are very similar, which makes sense as the Point Biserial-r put column A13 as the third least correalted column to accepted or denied. 
+The A13 boxplots look slightly different than eachother, but still very
+similar. Their medians and upper quartiles are very close, while
+accepted has a lower bottom quartile and minimum. Accepted also has a
+higher maximum, excluding outliers. Again, both box plots are very
+similar, which makes sense as the Point Biserial-r put column A13 as the
+third least correalted column to accepted or denied.
 
-```{python}
-A13
+``` python
+A13.draw()
 ```
+
+![](Data_Wrangling_Final_files/figure-commonmark/cell-15-output-1.png)
 
 Logistic Regression of Card Accpetance or Denial Data with Lasso
 
-Return the Class column back to 0 or 1. 
-```{python}
+Return the Class column back to 0 or 1.
+
+``` python
 df['Class'] = df['Class'].map({'Denied': 0, 'Accepted': 1}).astype(int)
 ```
 
+Here we fit the lasso around the data, then do a logistic regression.
 
-Here we fit the lasso around the data, then do a logistic regression. 
+The lasso removes the lesser correlated values (like A1, A11, A13),
+which helps give a better look at the effects of each variable left
+over.
 
-The lasso removes the lesser correlated values (like A1, A11, A13), which helps give a better look at the effects of each variable left over. 
+First we create the columns to be used (X and y), then scale the data
+(so the lasso has fair comparisons between columns). We then create a
+new dataframe with the scaled data, then the lasso removes lesser
+correalted values. We then build a regression model with just the left
+over columns (selected_features).
 
-First we create the columns to be used (X and y), then scale the data (so the lasso has fair comparisons between columns). We then create a new dataframe with the scaled data, then the lasso removes lesser correalted values. We then build a regression model with just the left over columns (selected_features).
-```{python}
+``` python
 y = df["Class"].to_numpy()
 X = df.drop(columns=["CustomerID", 'Class'])
 
@@ -312,25 +378,64 @@ plt.text(0, 1, summary_str, fontsize=10, family="monospace", va="top")
 
 plt.savefig("C:/Users/shane/Downloads/fit_3_summary.png", dpi=300, bbox_inches='tight', transparent=True)
 plt.close()
-
 ```
 
-The logistic regression may seem confusing, as a new variable A5, replaces A10. This is most likely due to A10 having a high correaltion with already included variable(s), A9 and/or A8. This means the effect of A10 on Class is mostly covered by the other variables. Due to this the lasso would remove it, as it is not predictive and does not add as much to the regression. Instead the lasso keeps variable that are not redundant, like A5. Also in the Point Biserial-r, A5 is the 4th highest correlated vairable, so it may not have even "moved up" much to replace A10. 
+    Optimization terminated successfully.
+             Current function value: 0.346704
+             Iterations 7
+                               Logit Regression Results                           
+    ==============================================================================
+    Dep. Variable:             Q("Class")   No. Observations:                  690
+    Model:                          Logit   Df Residuals:                      686
+    Method:                           MLE   Df Model:                            3
+    Date:                Sat, 06 Dec 2025   Pseudo R-squ.:                  0.4954
+    Time:                        00:18:07   Log-Likelihood:                -239.23
+    converged:                       True   LL-Null:                       -474.08
+    Covariance Type:            nonrobust   LLR p-value:                1.754e-101
+    ==============================================================================
+                     coef    std err          z      P>|z|      [0.025      0.975]
+    ------------------------------------------------------------------------------
+    Intercept     -4.2535      0.369    -11.538      0.000      -4.976      -3.531
+    Q("A5")        0.1827      0.035      5.213      0.000       0.114       0.251
+    Q("A8")        3.4719      0.263     13.192      0.000       2.956       3.988
+    Q("A9")        1.2275      0.237      5.182      0.000       0.763       1.692
+    ==============================================================================
 
-To interpret the data, an intercept with a coeffecient of -4.2535, means each person who applies for the card, with all other predictor values at 0, has a log odds chance of being accepted of -4.2535, or a probability of (e^-4.2535 / (1 + e^-4.2535)) 1.4%. 
+The logistic regression may seem confusing, as a new variable A5,
+replaces A10. This is most likely due to A10 having a high correaltion
+with already included variable(s), A9 and/or A8. This means the effect
+of A10 on Class is mostly covered by the other variables. Due to this
+the lasso would remove it, as it is not predictive and does not add as
+much to the regression. Instead the lasso keeps variable that are not
+redundant, like A5. Also in the Point Biserial-r, A5 is the 4th highest
+correlated vairable, so it may not have even “moved up” much to replace
+A10.
 
-For A5, while all other variables are held constant, for every unit increase of A5, the chance of being accepted increases 20%.
+To interpret the data, an intercept with a coeffecient of -4.2535, means
+each person who applies for the card, with all other predictor values at
+0, has a log odds chance of being accepted of -4.2535, or a probability
+of (e^-4.2535 / (1 + e^-4.2535)) 1.4%.
 
-For A8, while all other variables are held constant, when A8 is 1, the odds of being accepted increase by around 3119%, or a factor of 32ish, compared to an A8 of 0.
+For A5, while all other variables are held constant, for every unit
+increase of A5, the chance of being accepted increases 20%.
 
-For A9, while all other variables are held constant, when A9 is 1, the odds of being accepted increase by around 241%, or a factor of 3.4ish, compared to an A9 of 0.
+For A8, while all other variables are held constant, when A8 is 1, the
+odds of being accepted increase by around 3119%, or a factor of 32ish,
+compared to an A8 of 0.
 
-All have statistically significant p-values, so it is safe to say these correlations are not random chance!
+For A9, while all other variables are held constant, when A9 is 1, the
+odds of being accepted increase by around 241%, or a factor of 3.4ish,
+compared to an A9 of 0.
 
-Lets now test and see how good of a predictor our new logistic regression is.
+All have statistically significant p-values, so it is safe to say these
+correlations are not random chance!
 
-Here we split the data, using 75% as train, and 25% as test. 
-```{python}
+Lets now test and see how good of a predictor our new logistic
+regression is.
+
+Here we split the data, using 75% as train, and 25% as test.
+
+``` python
 df['Class'] = df['Class'].astype('int')
 percent = (len(df)*.75)
 
@@ -338,10 +443,10 @@ train = df.loc[:percent]
 test = df.loc[percent:]
 ```
 
+Now we re-do what we did above, but now using the train data to create a
+regression. We then test it!
 
-Now we re-do what we did above, but now using the train data to create a regression. We then test it!
-
-```{python}
+``` python
 y_test = test["Class"].to_numpy()
 
 
@@ -383,14 +488,38 @@ plt.text(0, 1, summary_str, fontsize=10, family="monospace", va="top")
 
 plt.savefig("C:/Users/shane/Downloads/fit_3_summary_test.png", dpi=300, bbox_inches='tight', transparent=True)
 plt.close()
-
 ```
 
-Now we can get the accuracy from the above regression, by testing it against the y variable in the test set. 
+    Optimization terminated successfully.
+             Current function value: 0.352006
+             Iterations 7
+                               Logit Regression Results                           
+    ==============================================================================
+    Dep. Variable:             Q("Class")   No. Observations:                  518
+    Model:                          Logit   Df Residuals:                      514
+    Method:                           MLE   Df Model:                            3
+    Date:                Sat, 06 Dec 2025   Pseudo R-squ.:                  0.4893
+    Time:                        00:18:07   Log-Likelihood:                -182.34
+    converged:                       True   LL-Null:                       -357.01
+    Covariance Type:            nonrobust   LLR p-value:                 2.081e-75
+    ==============================================================================
+                     coef    std err          z      P>|z|      [0.025      0.975]
+    ------------------------------------------------------------------------------
+    Intercept     -4.1367      0.416     -9.951      0.000      -4.952      -3.322
+    Q("A5")        0.1762      0.040      4.404      0.000       0.098       0.255
+    Q("A8")        3.3606      0.292     11.527      0.000       2.789       3.932
+    Q("A9")        1.3781      0.270      5.108      0.000       0.849       1.907
+    ==============================================================================
 
-We round the logit_pred_prob up or down, as before we would get the probability of each instance, which cannot be compared to the test set as the test set has 0 or 1, denied or accepted. When we round it, we can see if the prediction thinks on average if it will happen or will not. 
+Now we can get the accuracy from the above regression, by testing it
+against the y variable in the test set.
 
-```{python}
+We round the logit_pred_prob up or down, as before we would get the
+probability of each instance, which cannot be compared to the test set
+as the test set has 0 or 1, denied or accepted. When we round it, we can
+see if the prediction thinks on average if it will happen or will not.
+
+``` python
 logit_pred_prob = fit_3.predict(test[selected_features])
 logit_pred = (logit_pred_prob >= 0.5).astype(int)
 logit_acc = accuracy_score(y_test, logit_pred)
@@ -398,4 +527,7 @@ logit_acc = accuracy_score(y_test, logit_pred)
 print(f"\nLogistic Regression Accuracy: {logit_acc:.4f}")
 ```
 
-An accuracy of 86%, could be better (87%), could be worse (85%). 
+
+    Logistic Regression Accuracy: 0.8605
+
+An accuracy of 86%, could be better (87%), could be worse (85%).

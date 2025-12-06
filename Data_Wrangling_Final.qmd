@@ -1,7 +1,7 @@
 ---
 title: "Data_Wrangling_Final.qmd"
 author: "Shane Bateman"
-format: 
+format: gfm
   html:
     toc: true
     toc-location: left

@@ -1,13 +1,17 @@
 ---
 title: "Data_Wrangling_Final"
 author: "Shane Bateman"
-format: gfm
+format:
+  gfm:
+    execute:
+      engine: jupyter
 jupyter: python3
 execute:
   warning: false
   message: false
   error: false
 ---
+
 
 
 Dataset: https://www.kaggle.com/datasets/nazishjaveed/credit-card-application/data

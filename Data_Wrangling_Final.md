@@ -1,0 +1,400 @@
+---
+title: "Data_Wrangling_Final.qmd"
+author: "Shane Bateman"
+format: gfm
+  warning: false
+  message: false
+  errors: false
+jupyter: python3
+---
+
+Dataset: https://www.kaggle.com/datasets/nazishjaveed/credit-card-application/data
+
+Here we import all needed packages and the CSV. 
+```{python}
+import pandas as pd
+import numpy as np
+from scipy.stats import pointbiserialr
+from plotnine import *
+import matplotlib.pyplot as plt
+import statsmodels.formula.api as smf
+import statsmodels.api as sm
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.linear_model import Lasso, LassoCV
+import statsmodels.formula.api as smf
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import preprocessing
+from sklearn.metrics import (
+    accuracy_score, log_loss, roc_auc_score, confusion_matrix, classification_report, ConfusionMatrixDisplay, f1_score
+)
+
+df = pd.read_csv("C:/Users/shane/Downloads/DataWrangling_Final/Credit_Card_Applications.csv")
+```
+
+Here we create the Point Biserial-r to see the columns most useful in prediction. 
+
+From this we can see the (3) most correlated columns are (in order) A8, A9, and then A10. Unfortunately the data set does not say what each column stands for. Maybe I can reach out to credit card companies and ask for their input and piece it together. 
+```{python}
+y= df['Class']
+x = df.drop(columns = ['Class', 'CustomerID'])
+
+results = {}
+
+for col in x.columns:
+    results['correlation_' + str(col)] = pointbiserialr(y, x[col])
+
+pb = pd.DataFrame.from_dict(results, orient='index')
+pb = pb.rename(columns = {'statistic': 'r', 'pvalue': 'p'})
+
+pb.index = pb.index.str.replace('correlation_', '', regex = False).str.strip()
+
+pb = pb.dropna(subset = ['r'])
+
+topN = 3
+
+pb_sorted = pb.reindex(pb['r'].abs().sort_values(ascending = False).index)
+
+plt.figure(figsize=(8, 10))
+pb_sorted['r'].head(topN).iloc[::-1].plot(kind='barh')
+plt.xlabel('Point-biserial r (Accept = 1)')
+plt.title(f'Top {topN} Features by |r|')
+plt.tight_layout()
+plt.show()
+```
+
+We now make the Class column into two categories (Denied and Accepted), as it makes the future boxplots look much better!
+
+```{python}
+df['Class'] = df['Class'].astype(str).str.strip().map({"0": 'Denied', "1": 'Accepted'})
+```
+
+According to the Point Biserial-r the three most important columns are A10, A9, and A8. Now we will create boxplots for comparisons between these groups in accepted or denied. On the Y axis we have the the column data. On the X axis we have accepted or denied, this allows for a quick comparison between groups. 
+
+```{python}
+
+A10 = (
+ggplot(df, aes(y="A10", x = 'Class', fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A10 Value" # Plot title
+)
+)
+
+A9 = (
+ggplot(df, aes(y="A9", x = 'Class', fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A9 Value" # Plot title
+)
+)
+
+A8 = (
+ggplot(df, aes(y="A8", x = 'Class', fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A8 Value" # Plot title
+)
+)
+```
+
+A8 boxplot. 
+
+Here we can see drastically different box plots for accepted or denied cards, along with the spread (or lack of) with the A8 values. Unfortunately A8 is atleast an integer, or more likely a binary, so the variables are only 1 or 0. Despite this, we can see the majority of variables of A8 that were accepted were a 1, while the majority of denied were a 0. Both have flat box plots meaning the range excluding outliers is entirely that number, then both have outliers at the value the boxplot is not at. This means (atleast, but realistically much higher) 75% of each is at that point. This backs the point biserial, having a higher A8 (1) is very important to getting accepted!
+```{python}
+A8
+```
+
+A9 boxplot
+
+A9 is very similar to A8, as in it is most likely a binary. For the accepted group, the bottom quartile is at 0, while the median and upper quartile are at 1. This means at least half, and less than 75%, of the data is at 1 in the accepted group. In comparison to A8, the accepted category has a larger spread. The denied category is still all 0s, excluding outliers, so it makes sense A9 has a high correlation, the boxplot is drastically different between accepted and denied. 
+
+```{python}
+A9
+```
+
+A10 boxplot
+
+A10 is not a binary, and has a values from 0 to high 60s. With the accepted boxplot we can see a median around 2 with an upper quartile around 6, and a maximum (before outliers) around 18. For the denied class, every value is at 0, except outliers. This means atleast 75% are at 0. This shows a huge difference in box plots for accepted and denied which makes sense, as the column A10 and accepted vs denied are moderately correlated. 
+
+```{python}
+A10
+```
+
+Return the Class column back to 0 or 1, so we can run the point biserial, for the least correlated (closest to 0). 
+```{python}
+df['Class'] = df['Class'].map({'Denied': 0, 'Accepted': 1}).astype(int)
+```
+
+Now we will look at the 3 least correlated variables. 
+
+```{python}
+results2 = {}
+
+for col in x.columns:
+    results2['correlation_' + str(col)] = pointbiserialr(y, x[col])
+
+pb2 = pd.DataFrame.from_dict(results, orient='index')
+pb2 = pb2.rename(columns = {'statistic': 'r', 'pvalue': 'p'})
+
+pb2.index = pb2.index.str.replace('correlation_', '', regex = False).str.strip()
+
+pb2 = pb2.dropna(subset = ['r'])
+
+bottomN = 3
+
+pb2_sorted = pb2.reindex(pb['r'].abs().sort_values(ascending = True).index)
+
+plt.figure(figsize=(8, 10))
+pb2_sorted['r'].head(bottomN).iloc[::-1].plot(kind='barh')
+plt.xlabel('Point-biserial r (Accept = 1)')
+plt.title(f'Bottom {bottomN} Features by |r|')
+plt.tight_layout()
+plt.show()
+```
+
+We now make the class column into two categories (again), as it makes the boxplots look much better!
+
+```{python}
+df['Class'] = df['Class'].astype(str).str.strip().map({"0": 'Denied', "1": 'Accepted'})
+```
+
+According to the point biserial r the three least important columns (in order) are A1, A11, and A13. Now we will create boxplots for comparisons between these groups in accepted or not. On the Y axis we have the column values. On the X axis we have the category, this allows for a quick comparison between groups. 
+
+```{python}
+A1 = (
+ggplot(df, aes(y="A1", x = 'Class', fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A1 Value" # Plot title
+)
+)
+
+A11 = (
+ggplot(df, aes(y="A11", x = 'Class', fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A11 Value" # Plot title
+)
+)
+
+A13 = (
+ggplot(df, aes(y="A13", x = 'Class', fill = 'Class'))
++ geom_boxplot()
++ theme_bw()
++ theme(
+panel_grid_major=element_blank(),
+panel_grid_minor=element_blank(),
+panel_border=element_blank(),
+panel_background=element_blank()
+)
++ labs(
+x="Class", # Axis label
+title="A13 Value" # Plot title
+)
+)
+```
+
+A1 boxplot
+
+For A1 the two boxplots are identical. This makes sense, as the Point Biserial-r said A1 was the least correlated with denied or accepted, so the two boxplots looking identical makes sense! Both have medians and upper quartiles at 1, with a lower quartile at 0. 
+
+```{python}
+A1
+```
+
+A11 boxplot
+
+For A11 the boxplots are again identical. This makes sense as the Point Biserial-r said it was the second least correlated column to denied or accepted. So it would make sense the boxplots are very similar. Both have an upper quartile at 1, with their median and lower quartile at 0. 
+
+```{python}
+A11
+```
+
+A13 boxplot
+
+The A13 boxplots look slightly different than eachother, but still very similar. Their medians and upper quartiles are very close, while accepted has a lower bottom quartile and minimum. Accepted also has a higher maximum, excluding outliers. Again, both box plots are very similar, which makes sense as the Point Biserial-r put column A13 as the third least correalted column to accepted or denied. 
+
+```{python}
+A13
+```
+
+Logistic Regression of Card Accpetance or Denial Data with Lasso
+
+Return the Class column back to 0 or 1. 
+```{python}
+df['Class'] = df['Class'].map({'Denied': 0, 'Accepted': 1}).astype(int)
+```
+
+
+Here we fit the lasso around the data, then do a logistic regression. 
+
+The lasso removes the lesser correlated values (like A1, A11, A13), which helps give a better look at the effects of each variable left over. 
+
+First we create the columns to be used (X and y), then scale the data (so the lasso has fair comparisons between columns). We then create a new dataframe with the scaled data, then the lasso removes lesser correalted values. We then build a regression model with just the left over columns (selected_features).
+```{python}
+y = df["Class"].to_numpy()
+X = df.drop(columns=["CustomerID", 'Class'])
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+features = X.columns
+
+x_data = pd.DataFrame(X_scaled, columns=features)
+
+lambda_seq = np.arange(0.1, 10.0 + 1e-12, 0.1)
+cv_model = LassoCV(alphas=lambda_seq, cv=10, fit_intercept=True, max_iter=10000)
+cv_model.fit(X_scaled, y)
+alpha_min = cv_model.alpha_
+lasso = Lasso(alpha=alpha_min, fit_intercept=True, max_iter=10000)
+lasso.fit(X_scaled, y)
+
+coef_series = pd.Series(lasso.coef_, index=features, name="coef")
+coef_df = coef_series.reset_index()
+
+selected_features = coef_series[coef_series != 0].index.tolist()
+
+predictors = [f'Q("{c}")' for c in selected_features]
+formula = 'Q("Class") ~ ' + " + ".join(predictors)
+
+fit_3 = smf.logit(formula = formula, data = df).fit()
+
+print(fit_3.summary())
+
+
+summary_str = fit_3.summary().as_text()
+
+fig = plt.figure(figsize=(9, 7))
+fig.patch.set_alpha(0)     
+plt.axis('off')
+
+plt.text(0, 1, summary_str, fontsize=10, family="monospace", va="top")
+
+plt.savefig("C:/Users/shane/Downloads/fit_3_summary.png", dpi=300, bbox_inches='tight', transparent=True)
+plt.close()
+
+```
+
+The logistic regression may seem confusing, as a new variable A5, replaces A10. This is most likely due to A10 having a high correaltion with already included variable(s), A9 and/or A8. This means the effect of A10 on Class is mostly covered by the other variables. Due to this the lasso would remove it, as it is not predictive and does not add as much to the regression. Instead the lasso keeps variable that are not redundant, like A5. Also in the Point Biserial-r, A5 is the 4th highest correlated vairable, so it may not have even "moved up" much to replace A10. 
+
+To interpret the data, an intercept with a coeffecient of -4.2535, means each person who applies for the card, with all other predictor values at 0, has a log odds chance of being accepted of -4.2535, or a probability of (e^-4.2535 / (1 + e^-4.2535)) 1.4%. 
+
+For A5, while all other variables are held constant, for every unit increase of A5, the chance of being accepted increases 20%.
+
+For A8, while all other variables are held constant, when A8 is 1, the odds of being accepted increase by around 3119%, or a factor of 32ish, compared to an A8 of 0.
+
+For A9, while all other variables are held constant, when A9 is 1, the odds of being accepted increase by around 241%, or a factor of 3.4ish, compared to an A9 of 0.
+
+All have statistically significant p-values, so it is safe to say these correlations are not random chance!
+
+Lets now test and see how good of a predictor our new logistic regression is.
+
+Here we split the data, using 75% as train, and 25% as test. 
+```{python}
+df['Class'] = df['Class'].astype('int')
+percent = (len(df)*.75)
+
+train = df.loc[:percent]
+test = df.loc[percent:]
+```
+
+
+Now we re-do what we did above, but now using the train data to create a regression. We then test it!
+
+```{python}
+y_test = test["Class"].to_numpy()
+
+
+y = train["Class"].to_numpy()
+X = train.drop(columns=["CustomerID", 'Class'])
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+features = X.columns
+
+x_data = pd.DataFrame(X_scaled, columns=features)
+
+lambda_seq = np.arange(0.1, 10.0 + 1e-12, 0.1)
+cv_model = LassoCV(alphas=lambda_seq, cv=10, fit_intercept=True, max_iter=10000)
+cv_model.fit(X_scaled, y)
+alpha_min = cv_model.alpha_
+lasso = Lasso(alpha=alpha_min, fit_intercept=True, max_iter=10000)
+lasso.fit(X_scaled, y)
+
+coef_series = pd.Series(lasso.coef_, index=features, name="coef")
+coef_df = coef_series.reset_index()
+
+selected_features = coef_series[coef_series != 0].index.tolist()
+
+predictors = [f'Q("{c}")' for c in selected_features]
+formula = 'Q("Class") ~ ' + " + ".join(predictors)
+
+fit_3 = smf.logit(formula = formula, data = train).fit()
+
+print(fit_3.summary())
+
+summary_str = fit_3.summary().as_text()
+
+fig = plt.figure(figsize=(9, 7))
+fig.patch.set_alpha(0)     
+plt.axis('off')
+
+plt.text(0, 1, summary_str, fontsize=10, family="monospace", va="top")
+
+plt.savefig("C:/Users/shane/Downloads/fit_3_summary_test.png", dpi=300, bbox_inches='tight', transparent=True)
+plt.close()
+
+```
+
+Now we can get the accuracy from the above regression, by testing it against the y variable in the test set. 
+
+We round the logit_pred_prob up or down, as before we would get the probability of each instance, which cannot be compared to the test set as the test set has 0 or 1, denied or accepted. When we round it, we can see if the prediction thinks on average if it will happen or will not. 
+
+```{python}
+logit_pred_prob = fit_3.predict(test[selected_features])
+logit_pred = (logit_pred_prob >= 0.5).astype(int)
+logit_acc = accuracy_score(y_test, logit_pred)
+
+print(f"\nLogistic Regression Accuracy: {logit_acc:.4f}")
+```
+
+An accuracy of 86%, could be better (87%), could be worse (85%). 

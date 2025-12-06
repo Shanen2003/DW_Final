@@ -1,12 +1,14 @@
 ---
 title: "Data_Wrangling_Final"
+author: "Shane Bateman"
 format: gfm
-execute: 
+jupyter: python3
+execute:
   warning: false
   message: false
-  errors: false
-jupyter: python3
+  error: false
 ---
+
 
 
 

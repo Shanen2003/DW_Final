@@ -129,7 +129,7 @@ A8 boxplot.
 
 Here we can see drastically different box plots for accepted or denied cards, along with the spread (or lack of) with the A8 values. Unfortunately A8 is atleast an integer, or more likely a binary, so the variables are only 1 or 0. Despite this, we can see the majority of variables of A8 that were accepted were a 1, while the majority of denied were a 0. Both have flat box plots meaning the range excluding outliers is entirely that number, then both have outliers at the value the boxplot is not at. This means (atleast, but realistically much higher) 75% of each is at that point. This backs the point biserial, having a higher A8 (1) is very important to getting accepted!
 ```{python}
-A8
+A8.draw()
 ```
 
 A9 boxplot
@@ -137,7 +137,7 @@ A9 boxplot
 A9 is very similar to A8, as in it is most likely a binary. For the accepted group, the bottom quartile is at 0, while the median and upper quartile are at 1. This means at least half, and less than 75%, of the data is at 1 in the accepted group. In comparison to A8, the accepted category has a larger spread. The denied category is still all 0s, excluding outliers, so it makes sense A9 has a high correlation, the boxplot is drastically different between accepted and denied. 
 
 ```{python}
-A9
+A9.draw()
 ```
 
 A10 boxplot
@@ -145,7 +145,7 @@ A10 boxplot
 A10 is not a binary, and has a values from 0 to high 60s. With the accepted boxplot we can see a median around 2 with an upper quartile around 6, and a maximum (before outliers) around 18. For the denied class, every value is at 0, except outliers. This means atleast 75% are at 0. This shows a huge difference in box plots for accepted and denied which makes sense, as the column A10 and accepted vs denied are moderately correlated. 
 
 ```{python}
-A10
+A10.draw()
 ```
 
 Return the Class column back to 0 or 1, so we can run the point biserial, for the least correlated (closest to 0). 
@@ -243,7 +243,7 @@ A1 boxplot
 For A1 the two boxplots are identical. This makes sense, as the Point Biserial-r said A1 was the least correlated with denied or accepted, so the two boxplots looking identical makes sense! Both have medians and upper quartiles at 1, with a lower quartile at 0. 
 
 ```{python}
-A1
+A1.draw()
 ```
 
 A11 boxplot
@@ -251,7 +251,7 @@ A11 boxplot
 For A11 the boxplots are again identical. This makes sense as the Point Biserial-r said it was the second least correlated column to denied or accepted. So it would make sense the boxplots are very similar. Both have an upper quartile at 1, with their median and lower quartile at 0. 
 
 ```{python}
-A11
+A11.draw()
 ```
 
 A13 boxplot
@@ -259,7 +259,7 @@ A13 boxplot
 The A13 boxplots look slightly different than eachother, but still very similar. Their medians and upper quartiles are very close, while accepted has a lower bottom quartile and minimum. Accepted also has a higher maximum, excluding outliers. Again, both box plots are very similar, which makes sense as the Point Biserial-r put column A13 as the third least correalted column to accepted or denied. 
 
 ```{python}
-A13
+A13.draw()
 ```
 
 Logistic Regression of Card Accpetance or Denial Data with Lasso

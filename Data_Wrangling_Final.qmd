@@ -2,11 +2,10 @@
 title: "Data_Wrangling_Final.qmd"
 author: "Shane Bateman"
 format: gfm
-  html:
-    toc: true
-    toc-location: left
-    self-contained: true
-engine: python3
+  warning: false
+  message: false
+  errors: false
+jupyter: python3
 ---
 
 Dataset: https://www.kaggle.com/datasets/nazishjaveed/credit-card-application/data

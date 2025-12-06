@@ -389,7 +389,7 @@ plt.close()
     Model:                          Logit   Df Residuals:                      686
     Method:                           MLE   Df Model:                            3
     Date:                Sat, 06 Dec 2025   Pseudo R-squ.:                  0.4954
-    Time:                        00:18:07   Log-Likelihood:                -239.23
+    Time:                        00:24:46   Log-Likelihood:                -239.23
     converged:                       True   LL-Null:                       -474.08
     Covariance Type:            nonrobust   LLR p-value:                1.754e-101
     ==============================================================================
@@ -499,7 +499,7 @@ plt.close()
     Model:                          Logit   Df Residuals:                      514
     Method:                           MLE   Df Model:                            3
     Date:                Sat, 06 Dec 2025   Pseudo R-squ.:                  0.4893
-    Time:                        00:18:07   Log-Likelihood:                -182.34
+    Time:                        00:24:47   Log-Likelihood:                -182.34
     converged:                       True   LL-Null:                       -357.01
     Covariance Type:            nonrobust   LLR p-value:                 2.081e-75
     ==============================================================================

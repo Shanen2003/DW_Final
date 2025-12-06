@@ -1,11 +1,12 @@
 ---
-title: "Data_Wrangling_Final.qmd"
+title: "Data_Wrangling_Final"
 author: "Shane Bateman"
 format: gfm
+jupyter: python3
+execute:
   warning: false
   message: false
-  errors: false
-jupyter: python3
+  error: false
 ---
 
 Dataset: https://www.kaggle.com/datasets/nazishjaveed/credit-card-application/data
